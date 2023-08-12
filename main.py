@@ -11,6 +11,8 @@ WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
 reps = 0
+checks = ""
+timer_win = None
 # ---------------------------- TIMER RESET ------------------------------- # 
 
 # ---------------------------- TIMER MECHANISM ------------------------------- # 
@@ -18,6 +20,7 @@ def start_timer():
     """when the timer begins, increase the reps value,
     decide whether to go on short break, long break or work"""
     global reps
+    global checks
     reps += 1
 
     work_sec = WORK_MIN * 60
@@ -26,12 +29,19 @@ def start_timer():
 
     if reps % 8 == 0:
         count_down(long_break_sec)
+        lblTimer.config(text="Break", fg=RED)
     # take a short break
     elif reps % 2 == 0:
         count_down(short_break_sec)
+        lblTimer.config(text="Break", fg=PINK)
+        checks += "✔"
+        lblCheck.config(text=checks)
         # get to work
     else:
         count_down(work_sec)
+        lblTimer.config(text="Work", fg=GREEN)
+
+
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 # input: count in seconds
@@ -42,6 +52,7 @@ def start_timer():
 
 
 def count_down(count):
+    global timer_win
     min_count = math.floor(count/60)
     sec_count = count % 60
 
@@ -50,7 +61,7 @@ def count_down(count):
 
     canvas.itemconfig(timer_text, text=f"{min_count}:{sec_count}")
     if count > 0:
-        window.after(2, count_down, count-1)
+        timer_win = window.after(2, count_down, count-1)
     else:
         start_timer()
 
@@ -80,20 +91,30 @@ timer_text = canvas.create_text(100,130, text="25:00", fill="white", font=(FONT_
 canvas.grid(row=1, column=1)
 
 
-def btnReset_Click():
-    print("button reset clicked")
+def reset_timer():
+    global timer_win
+    global reps
+    global checks
+    reps = 0
+    checks = ""
+
+    lblCheck.config(text=checks)
+    canvas.itemconfig(timer_text, text="25:00")
+    lblTimer.config(text="Timer")
+    window.after_cancel(timer_win)
+
 
 
 # next add the two buttons
 btnStart = Button(text="Start", command= start_timer)
 btnStart.grid(row=2, column=0)
 
-btnReset = Button(text="Reset", command= btnReset_Click)
+btnReset = Button(text="Reset", command= reset_timer)
 btnReset.grid(row=2, column=2)
 
 # finally add the Check label
-lblTimer = Label(text="✔", font=(FONT_NAME, 12, "bold"), fg=GREEN, bg=YELLOW)
-lblTimer.grid(row=3,column=1)
+lblCheck = Label(font=(FONT_NAME, 12, "bold"), fg=GREEN, bg=YELLOW)
+lblCheck.grid(row=3,column=1)
 
 
 
